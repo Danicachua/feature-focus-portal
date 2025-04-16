@@ -19,11 +19,27 @@ export default {
 		},
 		extend: {
 			colors: {
-				border: 'hsl(var(--border))',
-				input: 'hsl(var(--input))',
-				ring: 'hsl(var(--ring))',
-				background: 'hsl(var(--background))',
-				foreground: 'hsl(var(--foreground))',
+        border: 'hsl(var(--border))',
+        input: 'hsl(var(--input))',
+        ring: 'hsl(var(--ring))',
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
+        purple: {
+          50: '#F6F4FE',
+          100: '#E5DEFF',
+          500: '#8B5CF6',
+          600: '#7C3AED',
+        },
+        blue: {
+          500: '#0EA5E9',
+          600: '#0284C7',
+        },
+        gray: {
+          300: '#D1D5DB',
+          400: '#9CA3AF',
+          500: '#8E9196',
+          600: '#4B5563',
+        },
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))'
