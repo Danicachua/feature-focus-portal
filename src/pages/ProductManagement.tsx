@@ -1,6 +1,4 @@
-
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ViewProductDialog } from "@/components/ViewProductDialog";
+import { ProductForm } from "@/components/ProductForm";
 import { toast } from "@/hooks/use-toast";
 import { Search, Plus, Trash2 } from "lucide-react";
 
@@ -28,7 +27,7 @@ export default function ProductManagement() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const navigate = useNavigate();
+  const [showAddProduct, setShowAddProduct] = useState(false);
 
   useEffect(() => {
     fetchProducts();
@@ -72,13 +71,16 @@ export default function ProductManagement() {
     }
   };
 
+  const handleAddProduct = () => {
+    setShowAddProduct(true);
+  };
+
   const handleEditProduct = (product: Product) => {
     setSelectedProduct(product);
   };
 
   const handleDeleteProduct = async (prodcode: string) => {
     try {
-      // Delete price history first due to foreign key constraint
       const { error: priceHistError } = await supabase
         .from('pricehist')
         .delete()
@@ -86,7 +88,6 @@ export default function ProductManagement() {
 
       if (priceHistError) throw priceHistError;
 
-      // Then delete the product
       const { error: productError } = await supabase
         .from('product')
         .delete()
@@ -113,6 +114,10 @@ export default function ProductManagement() {
     setSelectedProduct(null);
   };
 
+  const handleCloseAddProduct = () => {
+    setShowAddProduct(false);
+  };
+
   const filteredProducts = products.filter((product) =>
     Object.values(product).some((value) =>
       value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
@@ -133,7 +138,10 @@ export default function ProductManagement() {
             className="pl-8"
           />
         </div>
-        <Button className="flex items-center gap-2">
+        <Button 
+          className="flex items-center gap-2"
+          onClick={handleAddProduct}
+        >
           <Plus className="h-4 w-4" />
           Add Product
         </Button>
@@ -187,6 +195,14 @@ export default function ProductManagement() {
           onClose={handleCloseDialog}
           product={selectedProduct}
           onProductUpdated={fetchProducts}
+        />
+      )}
+
+      {showAddProduct && (
+        <ProductForm
+          isOpen={true}
+          onClose={handleCloseAddProduct}
+          onSaved={fetchProducts}
         />
       )}
     </div>
