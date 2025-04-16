@@ -1,4 +1,6 @@
-
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/components/AuthProvider";
 import { PackageIcon, TrendingUpIcon, UsersIcon, DollarSignIcon } from "lucide-react";
 import { AppSidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
@@ -32,6 +34,19 @@ const products = [
 ] as const;
 
 const Index = () => {
+  const { user, isLoading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      navigate("/auth");
+    }
+  }, [user, isLoading, navigate]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
