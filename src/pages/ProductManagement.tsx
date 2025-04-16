@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ViewProductDialog } from "@/components/ViewProductDialog";
 import { toast } from "@/hooks/use-toast";
 import { Search, Plus } from "lucide-react";
 
@@ -26,6 +26,7 @@ export default function ProductManagement() {
   const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -35,14 +36,12 @@ export default function ProductManagement() {
   const fetchProducts = async () => {
     try {
       setIsLoading(true);
-      // First get all products
       const { data: productsData, error: productsError } = await supabase
         .from('product')
         .select('*');
 
       if (productsError) throw productsError;
 
-      // For each product, get its latest price from pricehist
       const productsWithPrices = await Promise.all(
         productsData.map(async (product) => {
           const { data: priceData } = await supabase
@@ -70,6 +69,14 @@ export default function ProductManagement() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleEditProduct = (product: Product) => {
+    setSelectedProduct(product);
+  };
+
+  const handleCloseDialog = () => {
+    setSelectedProduct(null);
   };
 
   const filteredProducts = products.filter((product) =>
@@ -119,7 +126,11 @@ export default function ProductManagement() {
                 <TableCell>{product.unit}</TableCell>
                 <TableCell>${product.current_price?.toFixed(2)}</TableCell>
                 <TableCell className="space-x-2">
-                  <Button variant="link" className="text-blue-500 p-0">
+                  <Button 
+                    variant="link" 
+                    className="text-blue-500 p-0"
+                    onClick={() => handleEditProduct(product)}
+                  >
                     Edit
                   </Button>
                   <Button variant="link" className="text-red-500 p-0">
@@ -130,6 +141,15 @@ export default function ProductManagement() {
             ))}
           </TableBody>
         </Table>
+      )}
+
+      {selectedProduct && (
+        <ViewProductDialog
+          isOpen={true}
+          onClose={handleCloseDialog}
+          product={selectedProduct}
+          onProductUpdated={fetchProducts}
+        />
       )}
     </div>
   );
