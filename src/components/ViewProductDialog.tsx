@@ -1,6 +1,6 @@
 
 import { format } from "date-fns";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -71,7 +71,7 @@ export function ViewProductDialog({ isOpen, onClose, product, onProductUpdated }
   };
 
   // Fetch price history when dialog opens
-  useState(() => {
+  useEffect(() => {
     if (isOpen) {
       fetchPriceHistory();
     }

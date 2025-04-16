@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,7 +14,7 @@ import {
 } from "@/components/ui/table";
 import { ViewProductDialog } from "@/components/ViewProductDialog";
 import { toast } from "@/hooks/use-toast";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, Trash2 } from "lucide-react";
 
 type Product = {
   prodcode: string;
@@ -75,6 +76,39 @@ export default function ProductManagement() {
     setSelectedProduct(product);
   };
 
+  const handleDeleteProduct = async (prodcode: string) => {
+    try {
+      // Delete price history first due to foreign key constraint
+      const { error: priceHistError } = await supabase
+        .from('pricehist')
+        .delete()
+        .eq('prodcode', prodcode);
+
+      if (priceHistError) throw priceHistError;
+
+      // Then delete the product
+      const { error: productError } = await supabase
+        .from('product')
+        .delete()
+        .eq('prodcode', prodcode);
+
+      if (productError) throw productError;
+
+      toast({
+        title: "Success",
+        description: "Product deleted successfully",
+      });
+
+      fetchProducts();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message,
+      });
+    }
+  };
+
   const handleCloseDialog = () => {
     setSelectedProduct(null);
   };
@@ -133,7 +167,11 @@ export default function ProductManagement() {
                   >
                     Edit
                   </Button>
-                  <Button variant="link" className="text-red-500 p-0">
+                  <Button 
+                    variant="link" 
+                    className="text-red-500 p-0"
+                    onClick={() => handleDeleteProduct(product.prodcode)}
+                  >
                     Delete
                   </Button>
                 </TableCell>
