@@ -1,3 +1,4 @@
+
 import { format } from "date-fns";
 import { useState, useEffect } from "react";
 import { Plus, Pencil, Trash2 } from "lucide-react";
@@ -187,7 +188,7 @@ export function ViewProductDialog({ isOpen, onClose, product, onProductUpdated }
         />
       )}
 
-      <AlertDialog open={!!priceToDelete} onOpenChange={() => setPriceToDelete(null)}>
+      <AlertDialog open={!!priceToDelete} onOpenChange={(open) => !open && setPriceToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
