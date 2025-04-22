@@ -127,7 +127,7 @@ export function ViewProductDialog({ isOpen, onClose, product, onProductUpdated }
               <div className="grid grid-cols-4 gap-4 p-2 bg-muted font-medium text-sm">
                 <div className="col-span-2">Effectivity Date</div>
                 <div>Unit Price</div>
-                <div>Actions</div>
+                <div className="text-right">Actions</div>
               </div>
               {priceHistory.map((price) => (
                 <div key={price.effdate} className="grid grid-cols-4 gap-4 p-2 border-t">
