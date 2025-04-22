@@ -1,4 +1,3 @@
-
 import { format } from "date-fns";
 import { useState, useEffect } from "react";
 import { Plus, Pencil, Trash2 } from "lucide-react";
@@ -6,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { PriceHistoryForm } from "@/components/PriceHistoryForm";
 
 type PriceHistory = {
   effdate: string;
@@ -25,6 +25,7 @@ type ViewProductDialogProps = {
 
 export function ViewProductDialog({ isOpen, onClose, product, onProductUpdated }: ViewProductDialogProps) {
   const [priceHistory, setPriceHistory] = useState<PriceHistory[]>([]);
+  const [showAddPrice, setShowAddPrice] = useState(false);
 
   const fetchPriceHistory = async () => {
     const { data, error } = await supabase
@@ -70,7 +71,6 @@ export function ViewProductDialog({ isOpen, onClose, product, onProductUpdated }
     onProductUpdated();
   };
 
-  // Fetch price history when dialog opens
   useEffect(() => {
     if (isOpen) {
       fetchPriceHistory();
@@ -101,7 +101,11 @@ export function ViewProductDialog({ isOpen, onClose, product, onProductUpdated }
           <div className="mt-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Price History</h3>
-              <Button size="sm" className="flex items-center gap-2">
+              <Button 
+                size="sm" 
+                className="flex items-center gap-2"
+                onClick={() => setShowAddPrice(true)}
+              >
                 <Plus className="h-4 w-4" /> Add Price
               </Button>
             </div>
@@ -137,6 +141,19 @@ export function ViewProductDialog({ isOpen, onClose, product, onProductUpdated }
           </div>
         </div>
       </DialogContent>
+
+      {showAddPrice && (
+        <PriceHistoryForm
+          isOpen={true}
+          onClose={() => setShowAddPrice(false)}
+          prodcode={product.prodcode}
+          onSaved={() => {
+            fetchPriceHistory();
+            onProductUpdated();
+            setShowAddPrice(false);
+          }}
+        />
+      )}
     </Dialog>
   );
 }

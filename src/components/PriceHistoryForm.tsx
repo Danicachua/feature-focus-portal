@@ -16,11 +16,11 @@ type PriceHistoryFormProps = {
   isOpen: boolean;
   onClose: () => void;
   prodcode: string;
+  onSaved: () => void;
   existingPrice?: {
     effdate: string;
     unitprice: number;
   };
-  onSaved: () => void;
 };
 
 export function PriceHistoryForm({ 
