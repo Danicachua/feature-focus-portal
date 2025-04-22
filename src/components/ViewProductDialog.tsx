@@ -6,6 +6,16 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { PriceHistoryForm } from "@/components/PriceHistoryForm";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type PriceHistory = {
   effdate: string;
@@ -26,6 +36,8 @@ type ViewProductDialogProps = {
 export function ViewProductDialog({ isOpen, onClose, product, onProductUpdated }: ViewProductDialogProps) {
   const [priceHistory, setPriceHistory] = useState<PriceHistory[]>([]);
   const [showAddPrice, setShowAddPrice] = useState(false);
+  const [selectedPrice, setSelectedPrice] = useState<PriceHistory | null>(null);
+  const [priceToDelete, setPriceToDelete] = useState<PriceHistory | null>(null);
 
   const fetchPriceHistory = async () => {
     const { data, error } = await supabase
@@ -46,29 +58,30 @@ export function ViewProductDialog({ isOpen, onClose, product, onProductUpdated }
     setPriceHistory(data || []);
   };
 
-  const handleDelete = async (effdate: string) => {
-    const { error } = await supabase
-      .from('pricehist')
-      .delete()
-      .eq('prodcode', product.prodcode)
-      .eq('effdate', effdate);
+  const handleDelete = async (price: PriceHistory) => {
+    try {
+      const { error } = await supabase
+        .from('pricehist')
+        .delete()
+        .eq('prodcode', product.prodcode)
+        .eq('effdate', price.effdate);
 
-    if (error) {
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Price deleted successfully",
+      });
+      
+      fetchPriceHistory();
+      onProductUpdated();
+    } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to delete price",
+        description: error.message,
       });
-      return;
     }
-
-    toast({
-      title: "Success",
-      description: "Price deleted successfully",
-    });
-    
-    fetchPriceHistory();
-    onProductUpdated();
   };
 
   useEffect(() => {
@@ -122,17 +135,22 @@ export function ViewProductDialog({ isOpen, onClose, product, onProductUpdated }
                     {format(new Date(price.effdate), "dd-MMM-yyyy")}
                   </div>
                   <div>${price.unitprice.toFixed(2)}</div>
-                  <div className="flex gap-2">
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <Pencil className="h-4 w-4 text-blue-500" />
+                  <div className="flex gap-2 justify-end">
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      className="h-8 w-8 text-blue-500"
+                      onClick={() => setSelectedPrice(price)}
+                    >
+                      <Pencil className="h-4 w-4" />
                     </Button>
                     <Button 
                       variant="ghost" 
                       size="icon"
-                      className="h-8 w-8"
-                      onClick={() => handleDelete(price.effdate)}
+                      className="h-8 w-8 text-red-500"
+                      onClick={() => setPriceToDelete(price)}
                     >
-                      <Trash2 className="h-4 w-4 text-red-500" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
@@ -154,6 +172,45 @@ export function ViewProductDialog({ isOpen, onClose, product, onProductUpdated }
           }}
         />
       )}
+
+      {selectedPrice && (
+        <PriceHistoryForm
+          isOpen={true}
+          onClose={() => setSelectedPrice(null)}
+          prodcode={product.prodcode}
+          existingPrice={selectedPrice}
+          onSaved={() => {
+            fetchPriceHistory();
+            onProductUpdated();
+            setSelectedPrice(null);
+          }}
+        />
+      )}
+
+      <AlertDialog open={!!priceToDelete} onOpenChange={() => setPriceToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the price history entry.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-500 hover:bg-red-600"
+              onClick={() => {
+                if (priceToDelete) {
+                  handleDelete(priceToDelete);
+                  setPriceToDelete(null);
+                }
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
