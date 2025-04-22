@@ -1,4 +1,3 @@
-
 import { format } from "date-fns";
 import { useState, useEffect } from "react";
 import { Plus, Pencil, Trash2 } from "lucide-react";
@@ -76,6 +75,7 @@ export function ViewProductDialog({ isOpen, onClose, product, onProductUpdated }
       
       fetchPriceHistory();
       onProductUpdated();
+      setPriceToDelete(null);
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -125,18 +125,18 @@ export function ViewProductDialog({ isOpen, onClose, product, onProductUpdated }
             </div>
             
             <div className="border rounded-lg">
-              <div className="grid grid-cols-4 gap-4 p-2 bg-muted font-medium text-sm">
-                <div className="col-span-2">Effectivity Date</div>
-                <div>Unit Price</div>
-                <div className="text-right">Actions</div>
+              <div className="grid grid-cols-12 gap-4 p-2 bg-muted font-medium text-sm">
+                <div className="col-span-5">Effectivity Date</div>
+                <div className="col-span-5">Unit Price</div>
+                <div className="col-span-2 text-center">Actions</div>
               </div>
               {priceHistory.map((price) => (
-                <div key={price.effdate} className="grid grid-cols-4 gap-4 p-2 border-t">
-                  <div className="col-span-2">
+                <div key={price.effdate} className="grid grid-cols-12 gap-4 p-2 border-t items-center">
+                  <div className="col-span-5">
                     {format(new Date(price.effdate), "dd-MMM-yyyy")}
                   </div>
-                  <div>${price.unitprice.toFixed(2)}</div>
-                  <div className="flex gap-2 justify-end">
+                  <div className="col-span-5">${price.unitprice.toFixed(2)}</div>
+                  <div className="col-span-2 flex justify-center space-x-2">
                     <Button 
                       variant="ghost" 
                       size="icon"
@@ -203,7 +203,6 @@ export function ViewProductDialog({ isOpen, onClose, product, onProductUpdated }
               onClick={() => {
                 if (priceToDelete) {
                   handleDelete(priceToDelete);
-                  setPriceToDelete(null);
                 }
               }}
             >
